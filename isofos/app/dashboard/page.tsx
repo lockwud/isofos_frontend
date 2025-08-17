@@ -1,0 +1,200 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Layout from '@/components/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiService } from '@/lib/api';
+import { Briefcase, Users, Package, Truck, TrendingUp, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
+
+interface DashboardStats {
+  totalProjects: number;
+  activeProjects: number;
+  totalClients: number;
+  totalEmployees: number;
+  totalSuppliers: number;
+  lowStockItems: number;
+}
+
+export default function Dashboard() {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalProjects: 0,
+    activeProjects: 0,
+    totalClients: 0,
+    totalEmployees: 0,
+    totalSuppliers: 0,
+    lowStockItems: 0,
+  });
+  const [recentProjects, setRecentProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all data in parallel
+      const [projects, clients, employees, suppliers, inventory] = await Promise.all([
+        apiService.getProjects().catch(() => []),
+        apiService.getClients().catch(() => []),
+        apiService.getEmployees().catch(() => []),
+        apiService.getSuppliers().catch(() => []),
+        apiService.getInventory().catch(() => []),
+      ]);
+
+      // Calculate stats
+      const activeProjects = projects.filter((p: any) => p.status === 'in_progress').length;
+      const lowStockItems = inventory.filter((item: any) => item.quantity < 10).length;
+
+      setStats({
+        totalProjects: projects.length,
+        activeProjects,
+        totalClients: clients.length,
+        totalEmployees: employees.length,
+        totalSuppliers: suppliers.length,
+        lowStockItems,
+      });
+
+      // Get recent projects (last 5)
+      const recent = projects
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5);
+      setRecentProjects(recent);
+
+    } catch (error) {
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const statCards = [
+    {
+      title: 'Total Projects',
+      value: stats.totalProjects,
+      icon: Briefcase,
+      color: 'text-blue-600',
+    },
+    {
+      title: 'Active Projects',
+      value: stats.activeProjects,
+      icon: TrendingUp,
+      color: 'text-green-600',
+    },
+    {
+      title: 'Clients',
+      value: stats.totalClients,
+      icon: Users,
+      color: 'text-purple-600',
+    },
+    {
+      title: 'Employees',
+      value: stats.totalEmployees,
+      icon: Users,
+      color: 'text-orange-600',
+    },
+    {
+      title: 'Suppliers',
+      value: stats.totalSuppliers,
+      icon: Truck,
+      color: 'text-indigo-600',
+    },
+    {
+      title: 'Low Stock Items',
+      value: stats.lowStockItems,
+      icon: AlertCircle,
+      color: 'text-red-600',
+    },
+  ];
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="h-16 bg-gray-200 rounded"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="mt-2 text-gray-600">Welcome back! Here's an overview of your construction business.</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {statCards.map((stat, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-3xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                  <div className={`p-3 rounded-full bg-gray-100`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Recent Projects */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Projects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {recentProjects.length > 0 ? (
+              <div className="space-y-4">
+                {recentProjects.map((project: any) => (
+                  <div key={project.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{project.name}</h4>
+                      <p className="text-sm text-gray-600">
+                        {project.client?.name} • {new Date(project.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                        project.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {project.status.replace('_', ' ').toUpperCase()}
+                      </span>
+                      {project.budget && (
+                        <p className="text-sm font-medium text-gray-900 mt-1">
+                          ${project.budget.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">No projects found</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
+  );
+}
