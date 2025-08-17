@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiService } from '@/lib/api';
 import { Briefcase, Users, Package, Truck, TrendingUp, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Project } from '@/types';
 
 interface DashboardStats {
   totalProjects: number;
@@ -25,7 +26,7 @@ export default function Dashboard() {
     totalSuppliers: 0,
     lowStockItems: 0,
   });
-  const [recentProjects, setRecentProjects] = useState<any[]>([]);
+  const [recentProjects, setRecentProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -60,7 +60,7 @@ export default function RegisterPage() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Create Account</h2>
             <p className="text-gray-600">
-              Join ConstructPro to manage your projects
+              Join Isofos to manage your projects
             </p>
           </div>
           

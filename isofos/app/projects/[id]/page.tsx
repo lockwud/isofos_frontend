@@ -11,13 +11,14 @@ import { apiService } from '@/lib/api';
 import { ArrowLeft, Edit, Users, Package } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Project, ProjectEmployee, ProjectMaterial } from '@/types';
 
 export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [project, setProject] = useState<any>(null);
-  const [projectEmployees, setProjectEmployees] = useState<any[]>([]);
-  const [projectMaterials, setProjectMaterials] = useState<any[]>([]);
+  const [project, setProject] = useState<Project | null>(null);
+  const [projectEmployees, setProjectEmployees] = useState<ProjectEmployee[]>([]);
+  const [projectMaterials, setProjectMaterials] = useState<ProjectMaterial[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,16 +33,14 @@ export default function ProjectDetailPage() {
       const projectData = await apiService.getProject(Number(params.id));
       setProject(projectData);
       
-      // Fetch project employees and materials if available
-      // Note: These endpoints might not exist in your backend yet
+      // Fetch project employees and materials
       try {
-        // const employees = await apiService.getAll(`project-employees?project_id=${params.id}`);
-        // const materials = await apiService.getAll(`project-materials?project_id=${params.id}`);
-        // setProjectEmployees(employees);
-        // setProjectMaterials(materials);
+        const employees = await apiService.getProjectEmployees(Number(params.id));
+        const materials = await apiService.getProjectMaterials(Number(params.id));
+        setProjectEmployees(employees);
+        setProjectMaterials(materials);
       } catch (error) {
-        // These endpoints might not exist yet
-        console.log('Project employees/materials endpoints not available yet');
+        console.log('Failed to fetch project resources:', error);
       }
       
     } catch (error) {

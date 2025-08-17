@@ -13,10 +13,11 @@ import { apiService } from '@/lib/api';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Client, Project } from '@/types';
 
 export default function NewProjectPage() {
   const router = useRouter();
-  const [clients, setClients] = useState<Array<any>>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -61,11 +62,15 @@ export default function NewProjectPage() {
     setLoading(true);
 
     try {
-      const projectData = {
-        ...formData,
+      const projectData: Partial<Project> = {
+        name: formData.name,
+        description: formData.description,
         client_id: parseInt(formData.client_id),
         project_type_id: parseInt(formData.project_type_id),
-        budget: formData.budget ? parseFloat(formData.budget) : null,
+        start_date: formData.start_date || undefined,
+        end_date: formData.end_date || undefined,
+        budget: formData.budget ? parseFloat(formData.budget) : undefined,
+        status: formData.status as "pending" | "in_progress" | "completed" | "cancelled" | undefined,
       };
 
       await apiService.createProject(projectData);

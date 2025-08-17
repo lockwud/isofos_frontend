@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'ConstructPro - Construction Management System',
+  title: 'Isofos - Construction ',
   description: 'Professional construction project management platform',
 };
 
