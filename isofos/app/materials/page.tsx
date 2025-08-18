@@ -1,17 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { apiService } from '@/lib/api';
-import { Plus, Search, Eye, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Box, DollarSign, Ruler } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
-export default function MaterialsTablePage() {
+export default function MaterialsPage() {
   const [materials, setMaterials] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -24,9 +23,10 @@ export default function MaterialsTablePage() {
     try {
       setLoading(true);
       const data = await apiService.getMaterials();
-      setMaterials(data);
+      setMaterials(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error('Failed to load materials');
+      setMaterials([]);
     } finally {
       setLoading(false);
     }
@@ -44,8 +44,8 @@ export default function MaterialsTablePage() {
   };
 
   const filteredMaterials = materials.filter(material =>
-    material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    material.supplier?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    material?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+    material?.description?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -56,7 +56,7 @@ export default function MaterialsTablePage() {
             <h1 className="text-3xl font-bold text-gray-900">Materials</h1>
             <p className="mt-2 text-gray-600">Manage your construction materials</p>
           </div>
-          <Link href="/dashboard/materials/new">
+          <Link href="/materials/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               New Material
@@ -78,10 +78,10 @@ export default function MaterialsTablePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Material</TableHead>
                 <TableHead>Supplier</TableHead>
-                <TableHead>Unit Price</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Unit</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -101,31 +101,37 @@ export default function MaterialsTablePage() {
               ) : (
                 filteredMaterials.map((material) => (
                   <TableRow key={material.id}>
-                    <TableCell className="font-medium flex items-center">
-                      <Package className="h-4 w-4 mr-2" />
-                      {material.name}
-                    </TableCell>
-                    <TableCell>
-                      {material.supplier?.name ? (
-                        <Badge variant="secondary">{material.supplier.name}</Badge>
-                      ) : (
-                        'No supplier'
+                    <TableCell className="font-medium">
+                      <div className="flex items-center">
+                        <Box className="h-4 w-4 mr-2" />
+                        {material.name}
+                      </div>
+                      {material.description && (
+                        <div className="text-sm text-gray-500">{material.description}</div>
                       )}
                     </TableCell>
                     <TableCell>
-                      ${material.unit_price.toFixed(2)}
-                      {material.unit_of_measure && `/${material.unit_of_measure}`}
+                      {material.supplier?.name || 'No supplier'}
                     </TableCell>
-                    <TableCell className="text-sm text-gray-600">
-                      {material.description || 'No description'}
+                    <TableCell>
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4 mr-1" />
+                        {material.unit_price.toFixed(2)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <Ruler className="h-4 w-4 mr-1" />
+                        {material.unit_of_measure || '-'}
+                      </div>
                     </TableCell>
                     <TableCell className="flex gap-2">
-                      <Link href={`/dashboard/materials/${material.id}`}>
+                      <Link href={`/materials/${material.id}`}>
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/materials/${material.id}/edit`}>
+                      <Link href={`/materials/${material.id}/edit`}>
                         <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>

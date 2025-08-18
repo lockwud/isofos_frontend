@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { apiService } from '@/lib/api';
 import { Plus, Search, Eye, Edit, Trash2, Mail, Phone, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
-export default function SuppliersTablePage() {
+export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
@@ -23,9 +23,10 @@ export default function SuppliersTablePage() {
     try {
       setLoading(true);
       const data = await apiService.getSuppliers();
-      setSuppliers(data);
+      setSuppliers(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error('Failed to load suppliers');
+      setSuppliers([]);
     } finally {
       setLoading(false);
     }
@@ -43,8 +44,8 @@ export default function SuppliersTablePage() {
   };
 
   const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.email.toLowerCase().includes(searchTerm.toLowerCase())
+    supplier?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+    supplier?.email?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -55,7 +56,7 @@ export default function SuppliersTablePage() {
             <h1 className="text-3xl font-bold text-gray-900">Suppliers</h1>
             <p className="mt-2 text-gray-600">Manage your supplier network</p>
           </div>
-          <Link href="/dashboard/suppliers/new">
+          <Link href="/suppliers/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               New Supplier
@@ -123,12 +124,12 @@ export default function SuppliersTablePage() {
                       )}
                     </TableCell>
                     <TableCell className="flex gap-2">
-                      <Link href={`/dashboard/suppliers/${supplier.id}`}>
+                      <Link href={`/suppliers/${supplier.id}`}>
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      <Link href={`/dashboard/suppliers/${supplier.id}/edit`}>
+                      <Link href={`/suppliers/${supplier.id}/edit`}>
                         <Button variant="outline" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
