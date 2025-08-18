@@ -37,36 +37,47 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
-      // Fetch all data in parallel
-      const [projects, clients, employees, suppliers, inventory] = await Promise.all([
-        apiService.getProjects().catch(() => []),
-        apiService.getClients().catch(() => []),
-        apiService.getEmployees().catch(() => []),
-        apiService.getSuppliers().catch(() => []),
-        apiService.getInventory().catch(() => []),
+      // Fetch all data in parallel using the correct API methods
+      const [
+        projectsResponse,
+        clientsResponse,
+        employeesResponse,
+        suppliersResponse,
+        inventoryResponse,
+        projectsData
+      ] = await Promise.all([
+        apiService.totalProjects(),
+        apiService.totalClients(),
+        apiService.totalEmployees(),
+        apiService.totalSuppliers(),
+        apiService.getInventory(),
+        apiService.getProjects() // For recent projects
       ]);
 
-      // Calculate stats
-      const activeProjects = projects.filter((p: any) => p.status === 'in_progress').length;
-      const lowStockItems = inventory.filter((item: any) => item.quantity < 10).length;
+      // Calculate stats from responses
+      const activeProjects = projectsData.filter((p: Project) => p.status === 'in_progress').length;
+      const lowStockItems = inventoryResponse.filter((item: any) => item.quantity < 10).length;
 
       setStats({
-        totalProjects: projects.length,
+        totalProjects: projectsResponse.total || 0,
         activeProjects,
-        totalClients: clients.length,
-        totalEmployees: employees.length,
-        totalSuppliers: suppliers.length,
+        totalClients: clientsResponse.total || 0,
+        totalEmployees: employeesResponse.total || 0,
+        totalSuppliers: suppliersResponse.total || 0,
         lowStockItems,
       });
 
       // Get recent projects (last 5)
-      const recent = projects
-        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      const recent = [...projectsData]
+        .sort((a: Project, b: Project) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
         .slice(0, 5);
       setRecentProjects(recent);
 
-    } catch (error) {
-      toast.error('Failed to load dashboard data');
+    } catch (error: any) {
+      console.error('Dashboard error:', error);
+      toast.error(error.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -164,7 +175,7 @@ export default function Dashboard() {
           <CardContent>
             {recentProjects.length > 0 ? (
               <div className="space-y-4">
-                {recentProjects.map((project: any) => (
+                {recentProjects.map((project) => (
                   <div key={project.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div>
                       <h4 className="font-medium text-gray-900">{project.name}</h4>

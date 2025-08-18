@@ -12,7 +12,7 @@ import {
   Manager
 } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:3001/api';
 
 class ApiService {
   private token: string | null = null;
@@ -97,7 +97,7 @@ class ApiService {
 
   // Auth endpoints
   async login(credentials: { email: string; password: string }, loadingKey?: string) {
-    return this.request<{ token: string; manager: Manager }>('/auth/login', {
+    return this.request<{ token: string; manager: Manager }>('/managers/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     }, loadingKey);
@@ -107,7 +107,7 @@ class ApiService {
     data: { first_name: string; last_name: string; email: string; password: string; phone?: string },
     loadingKey?: string
   ) {
-    return this.request<{ token: string; manager: Manager }>('/auth/register', {
+    return this.request<{ token: string; manager: Manager }>('/managers/signup', {
       method: 'POST',
       body: JSON.stringify(data),
     }, loadingKey);
@@ -312,6 +312,35 @@ class ApiService {
 
   async removeProjectMaterial(id: number, loadingKey?: string) {
     return this.delete('project-materials', id, loadingKey);
+  }
+
+  // Report methods
+  async getProjectCostReport(projectId: number, loadingKey?: string) {
+    return this.request<any>(`/reports/project-cost/${projectId}`, {}, loadingKey);
+  }
+
+  async getEmployeeWorkloadReport(loadingKey?: string) {
+    return this.request<any>('/reports/employee-workload', {}, loadingKey);
+  }
+
+  async getInventoryValueReport(loadingKey?: string) {
+    return this.request<any>('/reports/inventory-value', {}, loadingKey);
+  }
+
+  async totalProjects(loadingKey?: string) {
+    return this.request<any>('/reports/total-projects', {}, loadingKey);
+  }
+
+  async totalEmployees(loadingKey?: string) {
+    return this.request<any>('/reports/total-employees', {}, loadingKey);
+  }
+
+  async totalSuppliers(loadingKey?: string) {
+    return this.request<any>('/reports/total-suppliers', {}, loadingKey);
+  }
+
+  async totalClients(loadingKey?: string) {
+    return this.request<any>('/reports/total-clients', {}, loadingKey);
   }
 }
 

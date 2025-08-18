@@ -41,13 +41,21 @@ export default function NewProjectPage() {
   }, []);
 
   const fetchClients = async () => {
-    try {
-      const data = await apiService.getClients();
-      setClients(data);
-    } catch (error) {
-      toast.error('Failed to load clients');
-    }
-  };
+  try {
+    const data = await apiService.getClients();
+    console.log("getClients response:", data);
+
+    // Extract array safely
+    const clientsArray = Array.isArray(data)
+      ? data
+      : data.clients || data.data || [];
+
+    setClients(clientsArray);
+  } catch (error) {
+    toast.error('Failed to load clients');
+  }
+};
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -10,9 +10,20 @@ import { Plus, Search, Eye, Edit, Trash2, Mail, Phone, MapPin, DollarSign } from
 import Link from 'next/link';
 import { toast } from 'sonner';
 
+interface Employee {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  position?: string;
+  base_salary: number;
+  hire_date?: string;
+}
+
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [filteredEmployees, setFilteredEmployees] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -21,22 +32,26 @@ export default function EmployeesPage() {
   }, []);
 
   useEffect(() => {
-    const filtered = employees.filter((employee: any) =>
-      `${employee.first_name} ${employee.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (employee.position && employee.position.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-    setFilteredEmployees(filtered);
+    if (Array.isArray(employees)) {
+      const filtered = employees.filter((employee) =>
+        `${employee.first_name} ${employee.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (employee.position && employee.position.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      setFilteredEmployees(filtered);
+    }
   }, [employees, searchTerm]);
 
   const fetchEmployees = async () => {
     try {
       setLoading(true);
       const data = await apiService.getEmployees();
-      setEmployees(data);
-      setFilteredEmployees(data);
+      setEmployees(Array.isArray(data) ? data : []);
+      setFilteredEmployees(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error('Failed to load employees');
+      setEmployees([]);
+      setFilteredEmployees([]);
     } finally {
       setLoading(false);
     }
@@ -94,7 +109,7 @@ export default function EmployeesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredEmployees.map((employee: any) => (
+            {filteredEmployees.map((employee) => (
               <Card key={employee.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">

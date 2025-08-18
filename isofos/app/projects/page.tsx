@@ -31,17 +31,21 @@ export default function ProjectsPage() {
   }, [projects, searchTerm]);
 
   const fetchProjects = async () => {
-    try {
-      setLoading(true);
-      const data = await apiService.getProjects();
-      setProjects(data);
-      setFilteredProjects(data);
-    } catch (error) {
-      toast.error('Failed to load projects');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    const data = await apiService.getProjects();
+
+    // Check if API wrapped projects
+    const projectsArray = Array.isArray(data) ? data : data.projects || data.data || [];
+
+    setProjects(projectsArray);
+    setFilteredProjects(projectsArray);
+  } catch (error) {
+    toast.error('Failed to load projects');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const deleteProject = async (id: number) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
@@ -104,7 +108,7 @@ export default function ProjectsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project: any) => (
+            {filteredProjects?.map((project: any) => (
               <Card key={project.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">

@@ -28,18 +28,25 @@ export default function ClientsPage() {
     setFilteredClients(filtered);
   }, [clients, searchTerm]);
 
-  const fetchClients = async () => {
-    try {
-      setLoading(true);
-      const data = await apiService.getClients();
-      setClients(data);
-      setFilteredClients(data);
-    } catch (error) {
-      toast.error('Failed to load clients');
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchClients = async () => {
+  try {
+    setLoading(true);
+    const data = await apiService.getClients();
+    console.log("Clients API response:", data);
+
+    // Normalize response into an array
+    const clientsArray = Array.isArray(data)
+      ? data
+      : data.clients || data.data || [];
+
+    setClients(clientsArray);
+    setFilteredClients(clientsArray);
+  } catch (error) {
+    toast.error('Failed to load clients');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const deleteClient = async (id: number) => {
     if (!confirm('Are you sure you want to delete this client?')) return;
