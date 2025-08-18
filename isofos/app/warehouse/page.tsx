@@ -56,7 +56,7 @@ export default function WarehousesPage() {
             <h1 className="text-3xl font-bold text-gray-900">Warehouses</h1>
             <p className="mt-2 text-gray-600">Manage your warehouse locations</p>
           </div>
-          <Link href="/warehouses/new">
+          <Link href="/warehouse/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               New Warehouse
