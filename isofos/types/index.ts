@@ -69,17 +69,17 @@ export interface Client {
   }
   
   export interface Employee {
-    id: number;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone?: string;
-    address?: string;
-    position?: string;
-    base_salary: number;
-    hire_date?: string;
-    created_at: string;
-  }
+  em_id: string;        // Changed from 'id: number'
+  em_name: string;      // Changed from 'first_name' and 'last_name'
+  em_roll: string;      // Changed from 'position'
+  em_salary: number;    // Changed from 'base_salary'
+  mng_id: string;       // New field for manager reference
+  email?: string;       // Optional fields kept from original
+  phone?: string;
+  address?: string;
+  hire_date?: string;
+  created_at?: string;
+}
   
   export interface ProjectMaterial {
     id: number;

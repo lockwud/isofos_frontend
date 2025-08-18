@@ -184,27 +184,53 @@ class ApiService {
     return this.delete('clients', id, loadingKey);
   }
 
-  // Employee methods
-  async getEmployees(loadingKey?: string): Promise<Employee[]> {
-    return this.getAll<Employee>('employees', loadingKey);
-  }
+  // Employee methods - updated to match backend expectations
+async getEmployees(loadingKey?: string): Promise<Employee[]> {
+  return this.request<Employee[]>('/employees', {}, loadingKey);
+}
 
-  async getEmployee(id: number, loadingKey?: string): Promise<Employee> {
-    return this.getById<Employee>('employees', id, loadingKey);
-  }
+async getEmployee(id: string, loadingKey?: string): Promise<Employee> {
+  return this.request<Employee>(`/employees/${id}`, {}, loadingKey);
+}
 
-  async createEmployee(data: Partial<Employee>, loadingKey?: string): Promise<Employee> {
-    return this.create<Employee>('employees', data, loadingKey);
-  }
+async createEmployee(data: {
+  em_id: string;
+  em_name: string;
+  em_roll: string;
+  em_salary: number;
+  mng_id: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  hire_date?: string;
+}, loadingKey?: string): Promise<Employee> {
+  return this.request<Employee>('/employees', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }, loadingKey);
+}
 
-  async updateEmployee(id: number, data: Partial<Employee>, loadingKey?: string): Promise<Employee> {
-    return this.update<Employee>('employees', id, data, loadingKey);
-  }
+async updateEmployee(id: string, data: Partial<{
+  em_name: string;
+  em_roll: string;
+  em_salary: number;
+  mng_id: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  hire_date?: string;
+}>, loadingKey?: string): Promise<Employee> {
+  return this.request<Employee>(`/employees/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }, loadingKey);
+}
 
-  async deleteEmployee(id: number, loadingKey?: string) {
-    return this.delete('employees', id, loadingKey);
-  }
-
+async deleteEmployee(id: string, loadingKey?: string): Promise<void> {
+  return this.request<void>(`/employees/${id}`, {
+    method: 'DELETE',
+  }, loadingKey);
+}
   // Supplier methods
   async getSuppliers(loadingKey?: string): Promise<Supplier[]> {
     return this.getAll<Supplier>('suppliers', loadingKey);

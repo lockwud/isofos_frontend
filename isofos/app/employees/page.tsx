@@ -11,13 +11,13 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 
 interface Employee {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
+  em_id: string;
+  em_name: string;
+  em_roll: string;
+  em_salary: number;
+  mng_id: string;
+  email?: string;
   phone?: string;
-  position?: string;
-  base_salary: number;
   hire_date?: string;
 }
 
@@ -34,9 +34,9 @@ export default function EmployeesPage() {
   useEffect(() => {
     if (Array.isArray(employees)) {
       const filtered = employees.filter((employee) =>
-        `${employee.first_name} ${employee.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (employee.position && employee.position.toLowerCase().includes(searchTerm.toLowerCase()))
+        employee.em_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        employee.em_roll.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredEmployees(filtered);
     }
@@ -57,11 +57,11 @@ export default function EmployeesPage() {
     }
   };
 
-  const deleteEmployee = async (id: number) => {
+  const deleteEmployee = async (em_id: string) => {
     if (!confirm('Are you sure you want to delete this employee?')) return;
 
     try {
-      await apiService.deleteEmployee(id);
+      await apiService.deleteEmployee(em_id);
       toast.success('Employee deleted successfully');
       fetchEmployees();
     } catch (error) {
@@ -110,21 +110,21 @@ export default function EmployeesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEmployees.map((employee) => (
-              <Card key={employee.id} className="hover:shadow-lg transition-shadow">
+              <Card key={employee.em_id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <CardTitle className="text-lg">
-                    {employee.first_name} {employee.last_name}
+                    {employee.em_name}
                   </CardTitle>
-                  {employee.position && (
-                    <p className="text-sm text-gray-600">{employee.position}</p>
-                  )}
+                  <p className="text-sm text-gray-600">{employee.em_roll}</p>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Mail className="h-4 w-4 mr-2" />
-                      {employee.email}
-                    </div>
+                    {employee.email && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Mail className="h-4 w-4 mr-2" />
+                        {employee.email}
+                      </div>
+                    )}
                     {employee.phone && (
                       <div className="flex items-center text-sm text-gray-600">
                         <Phone className="h-4 w-4 mr-2" />
@@ -133,7 +133,7 @@ export default function EmployeesPage() {
                     )}
                     <div className="flex items-center text-sm text-gray-600">
                       <DollarSign className="h-4 w-4 mr-2" />
-                      ${employee.base_salary.toLocaleString()}/year
+                      ${employee.em_salary.toLocaleString()}/year
                     </div>
                     {employee.hire_date && (
                       <div className="text-xs text-gray-500">
@@ -143,12 +143,12 @@ export default function EmployeesPage() {
                   </div>
                   
                   <div className="flex justify-end gap-2 mt-4">
-                    <Link href={`/employees/${employee.id}`}>
+                    <Link href={`/employees/${employee.em_id}`}>
                       <Button variant="outline" size="sm">
                         <Eye className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Link href={`/employees/${employee.id}/edit`}>
+                    <Link href={`/employees/${employee.em_id}/edit`}>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -156,7 +156,7 @@ export default function EmployeesPage() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => deleteEmployee(employee.id)}
+                      onClick={() => deleteEmployee(employee.em_id)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4" />
