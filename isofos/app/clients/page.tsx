@@ -1,62 +1,84 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Layout from '@/components/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { apiService } from '@/lib/api';
-import { Plus, Search, Eye, Edit, Trash2, Mail, Phone, MapPin } from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
+import React, { useEffect, useState } from "react";
+import Layout from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { apiService } from "@/lib/api";
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [filteredClients, setFilteredClients] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
 
+  const openModal = (client: any) => {
+    setSelectedClient(client);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedClient(null);
+    setIsModalOpen(false);
+  };
   useEffect(() => {
     fetchClients();
   }, []);
 
   useEffect(() => {
-    const filtered = clients.filter((client: any) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = clients.filter(
+      (client: any) =>
+        client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredClients(filtered);
   }, [clients, searchTerm]);
 
- const fetchClients = async () => {
-  try {
-    setLoading(true);
-    const data = await apiService.getClients();
-    console.log("Clients API response:", data);
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const data = await apiService.getClients();
+      console.log("Clients API response:", data);
 
-    // Normalize response into an array
-    const clientsArray = Array.isArray(data)
-      ? data
-      : data.clients || data.data || [];
+      // Normalize response into an array
+      const clientsArray = Array.isArray(data)
+        ? data
+        : data.clients || data.data || [];
 
-    setClients(clientsArray);
-    setFilteredClients(clientsArray);
-  } catch (error) {
-    toast.error('Failed to load clients');
-  } finally {
-    setLoading(false);
-  }
-};
+      setClients(clientsArray);
+      setFilteredClients(clientsArray);
+    } catch (error) {
+      toast.error("Failed to load clients");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const deleteClient = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this client?')) return;
+    if (!confirm("Are you sure you want to delete this client?")) return;
 
     try {
       await apiService.deleteClient(id);
-      toast.success('Client deleted successfully');
+      toast.success("Client deleted successfully");
       fetchClients();
     } catch (error) {
-      toast.error('Failed to delete client');
+      toast.error("Failed to delete client");
     }
   };
 
@@ -66,7 +88,9 @@ export default function ClientsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Clients</h1>
-            <p className="mt-2 text-gray-600">Manage your client relationships</p>
+            <p className="mt-2 text-gray-600">
+              Manage your client relationships
+            </p>
           </div>
           <Link href="/clients/new">
             <Button>
@@ -101,7 +125,10 @@ export default function ClientsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClients.map((client: any) => (
-              <Card key={client.id} className="hover:shadow-lg transition-shadow">
+              <Card
+                key={client.id}
+                className="hover:shadow-lg transition-shadow"
+              >
                 <CardHeader>
                   <CardTitle className="text-lg">{client.name}</CardTitle>
                 </CardHeader>
@@ -127,20 +154,16 @@ export default function ClientsPage() {
                       Joined: {new Date(client.created_at).toLocaleDateString()}
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end gap-2 mt-4">
-                    <Link href={`/clients/${client.id}`}>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                   
                     <Link href={`/clients/${client.id}/edit`}>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => deleteClient(client.id)}
                       className="text-red-600 hover:text-red-700"
@@ -168,6 +191,7 @@ export default function ClientsPage() {
           </Card>
         )}
       </div>
+   
     </Layout>
   );
 }

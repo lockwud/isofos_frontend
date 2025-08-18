@@ -37,7 +37,7 @@ export default function ProjectsPage() {
 
     // Check if API wrapped projects
     const projectsArray = Array.isArray(data) ? data : data.projects || data.data || [];
-
+     console.log("projects",projectsArray)
     setProjects(projectsArray);
     setFilteredProjects(projectsArray);
   } catch (error) {
@@ -121,10 +121,10 @@ export default function ProjectsPage() {
                 <CardContent>
                   <div className="space-y-2">
                     <p className="text-sm text-gray-600">
-                      <strong>Client:</strong> {project.client?.name || 'N/A'}
+                      <strong>Client:</strong> {project.client_name || 'N/A'}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <strong>Type:</strong> {project.project_type?.type_name || 'N/A'}
+                      <strong>Type:</strong> {project.project_type || 'N/A'}
                     </p>
                     {project.budget && (
                       <p className="text-sm text-gray-600">
@@ -139,11 +139,7 @@ export default function ProjectsPage() {
                   </div>
                   
                   <div className="flex justify-end gap-2 mt-4">
-                    <Link href={`/projects/${project.id}`}>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </Link>
+              
                     <Link href={`/projects/${project.id}/edit`}>
                       <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4" />

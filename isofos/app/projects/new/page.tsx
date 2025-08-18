@@ -26,7 +26,7 @@ export default function NewProjectPage() {
     start_date: '',
     end_date: '',
     budget: '',
-    status: 'pending',
+    status: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -65,32 +65,36 @@ export default function NewProjectPage() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const projectData: Partial<Project> = {
-        name: formData.name,
-        description: formData.description,
-        client_id: parseInt(formData.client_id),
-        project_type_id: parseInt(formData.project_type_id),
-        start_date: formData.start_date || undefined,
-        end_date: formData.end_date || undefined,
-        budget: formData.budget ? parseFloat(formData.budget) : undefined,
-        status: formData.status as "pending" | "in_progress" | "completed" | "cancelled" | undefined,
-      };
+  try {
+    const projectData: Partial<Project> = {
+      name: formData.name,
+      description: formData.description,
+      client_id: formData.client_id ? parseInt(formData.client_id) : undefined,
+      project_type_id: formData.project_type_id ? parseInt(formData.project_type_id) : undefined,
+      start_date: formData.start_date || undefined,
+      end_date: formData.end_date || undefined,
+      budget: formData.budget ? parseFloat(formData.budget) : undefined,
+      status: formData.status || "pending",
+    };
 
-      await apiService.createProject(projectData);
-      toast.success('Project created successfully!');
-      router.push('/projects');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create project');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Remove undefined fields (optional, but cleaner)
+    Object.keys(projectData).forEach(
+      (key) => projectData[key as keyof Project] === undefined && delete projectData[key as keyof Project]
+    );
 
+    await apiService.createProject(projectData);
+    toast.success('Project created successfully!');
+    router.push('/projects');
+  } catch (error: any) {
+    toast.error(error.message || 'Failed to create project');
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">

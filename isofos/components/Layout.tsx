@@ -33,7 +33,7 @@ export default function Layout({ children }: LayoutProps) {
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">
         <div className="flex h-16 items-center px-6 border-b">
           <Building2 className="h-8 w-8 text-blue-600" />
-          <span className="ml-2 text-xl font-bold text-gray-900">ConstructPro</span>
+          <span className="ml-2 text-xl font-bold text-gray-900">ISOFOS</span>
         </div>
 
         <nav className="flex-1 space-y-1 px-4 py-4">
