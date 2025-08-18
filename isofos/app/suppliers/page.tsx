@@ -23,7 +23,8 @@ export default function SuppliersPage() {
     try {
       setLoading(true);
       const data = await apiService.getSuppliers();
-      setSuppliers(Array.isArray(data) ? data : []);
+      console.log(data)
+      setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
     } catch (error) {
       toast.error('Failed to load suppliers');
       setSuppliers([]);
