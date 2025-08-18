@@ -38,7 +38,7 @@ export default function EditClientPage() {
         address: data.client.address || "",
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Failed to load client");
       router.push("/clients");
     } finally {
@@ -68,7 +68,7 @@ export default function EditClientPage() {
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
-          <Link href={`/clients/${params.id}`}>
+          <Link href={`/clients`}>
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back

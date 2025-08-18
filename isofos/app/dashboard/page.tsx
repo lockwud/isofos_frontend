@@ -55,8 +55,9 @@ export default function Dashboard() {
       ]);
 
       // Calculate stats from responses
-      const activeProjects = projectsData.filter((p: Project) => p.status === 'in_progress').length;
-      const lowStockItems = inventoryResponse.filter((item: any) => item.quantity < 10).length;
+      console.log(projectsData)
+      const activeProjects = projectsData.projects.filter((p: Project) => p.status === 'in_progress').length;
+      const lowStockItems = inventoryResponse.inventory.filter((item: any) => item.quantity < 10).length;
 
       setStats({
         totalProjects: projectsResponse.total || 0,
@@ -68,7 +69,7 @@ export default function Dashboard() {
       });
 
       // Get recent projects (last 5)
-      const recent = [...projectsData]
+      const recent = [...projectsData.projects]
         .sort((a: Project, b: Project) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         )

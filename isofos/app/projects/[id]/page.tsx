@@ -31,14 +31,14 @@ export default function ProjectDetailPage() {
     try {
       setLoading(true);
       const projectData = await apiService.getProject(Number(params.id));
-      setProject(projectData);
-      
+      setProject(projectData.project);
+      console.log(projectData.project)
       // Fetch project employees and materials
       try {
-        const employees = await apiService.getProjectEmployees(Number(params.id));
-        const materials = await apiService.getProjectMaterials(Number(params.id));
-        setProjectEmployees(employees);
-        setProjectMaterials(materials);
+        // const employees = await apiService.getProjectEmployees(Number(params.id));
+        // const materials = await apiService.getProjectMaterials(Number(params.id));
+        // setProjectEmployees(employees);
+        // setProjectMaterials(materials);
       } catch (error) {
         console.log('Failed to fetch project resources:', error);
       }
@@ -122,9 +122,9 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p><strong>Name:</strong> {project.client?.name || 'N/A'}</p>
-                <p><strong>Email:</strong> {project.client?.email || 'N/A'}</p>
-                <p><strong>Phone:</strong> {project.client?.phone || 'N/A'}</p>
+                <p><strong>Name:</strong> {project.client_name || 'N/A'}</p>
+                <p><strong>Email:</strong> {project.client_email || 'N/A'}</p>
+                <p><strong>Phone:</strong> {project.client_phone || 'N/A'}</p>
                 {project.client?.address && (
                   <p><strong>Address:</strong> {project.client.address}</p>
                 )}
@@ -138,7 +138,7 @@ export default function ProjectDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <p><strong>Type:</strong> {project.project_type?.type_name || 'N/A'}</p>
+                <p><strong>Type:</strong> {project.project_type || 'N/A'}</p>
                 <p><strong>Status:</strong> {project.status.replace('_', ' ')}</p>
                 {project.start_date && (
                   <p><strong>Start Date:</strong> {new Date(project.start_date).toLocaleDateString()}</p>
