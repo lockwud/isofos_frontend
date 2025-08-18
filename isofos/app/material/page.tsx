@@ -3,17 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { apiService } from '@/lib/api';
-import { Plus, Search, Eye, Edit, Trash2, Package, DollarSign } from 'lucide-react';
+import { Plus, Search, Eye, Edit, Trash2, Package } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
-export default function MaterialsPage() {
+export default function MaterialsTablePage() {
   const [materials, setMaterials] = useState<any[]>([]);
-  const [filteredMaterials, setFilteredMaterials] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -21,20 +20,11 @@ export default function MaterialsPage() {
     fetchMaterials();
   }, []);
 
-  useEffect(() => {
-    const filtered = materials.filter((material: any) =>
-      material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      material.supplier?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredMaterials(filtered);
-  }, [materials, searchTerm]);
-
   const fetchMaterials = async () => {
     try {
       setLoading(true);
       const data = await apiService.getMaterials();
       setMaterials(data);
-      setFilteredMaterials(data);
     } catch (error) {
       toast.error('Failed to load materials');
     } finally {
@@ -44,7 +34,6 @@ export default function MaterialsPage() {
 
   const deleteMaterial = async (id: number) => {
     if (!confirm('Are you sure you want to delete this material?')) return;
-
     try {
       await apiService.deleteMaterial(id);
       toast.success('Material deleted successfully');
@@ -54,6 +43,11 @@ export default function MaterialsPage() {
     }
   };
 
+  const filteredMaterials = materials.filter(material =>
+    material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    material.supplier?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -62,7 +56,7 @@ export default function MaterialsPage() {
             <h1 className="text-3xl font-bold text-gray-900">Materials</h1>
             <p className="mt-2 text-gray-600">Manage your construction materials</p>
           </div>
-          <Link href="/materials/new">
+          <Link href="/dashboard/materials/new">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               New Material
@@ -70,7 +64,6 @@ export default function MaterialsPage() {
           </Link>
         </div>
 
-        {/* Search */}
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
@@ -81,81 +74,77 @@ export default function MaterialsPage() {
           />
         </div>
 
-        {/* Materials Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="h-32 bg-gray-200 rounded"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMaterials.map((material: any) => (
-              <Card key={material.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="text-lg">{material.name}</CardTitle>
-                  {material.supplier?.name && (
-                    <Badge variant="secondary">{material.supplier.name}</Badge>
-                  )}
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {material.description && (
-                      <p className="text-sm text-gray-600">{material.description}</p>
-                    )}
-                    <div className="flex items-center text-sm text-gray-600">
-                      <DollarSign className="h-4 w-4 mr-2" />
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Supplier</TableHead>
+                <TableHead>Unit Price</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : filteredMaterials.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center">
+                    No materials found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredMaterials.map((material) => (
+                  <TableRow key={material.id}>
+                    <TableCell className="font-medium flex items-center">
+                      <Package className="h-4 w-4 mr-2" />
+                      {material.name}
+                    </TableCell>
+                    <TableCell>
+                      {material.supplier?.name ? (
+                        <Badge variant="secondary">{material.supplier.name}</Badge>
+                      ) : (
+                        'No supplier'
+                      )}
+                    </TableCell>
+                    <TableCell>
                       ${material.unit_price.toFixed(2)}
-                      {material.unit_of_measure && ` per ${material.unit_of_measure}`}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Added: {new Date(material.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end gap-2 mt-4">
-                    <Link href={`/materials/${material.id}`}>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4" />
+                      {material.unit_of_measure && `/${material.unit_of_measure}`}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {material.description || 'No description'}
+                    </TableCell>
+                    <TableCell className="flex gap-2">
+                      <Link href={`/dashboard/materials/${material.id}`}>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/dashboard/materials/${material.id}/edit`}>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteMaterial(material.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    </Link>
-                    <Link href={`/materials/${material.id}/edit`}>
-                      <Button variant="outline" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => deleteMaterial(material.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {!loading && filteredMaterials.length === 0 && (
-          <Card>
-            <CardContent className="text-center py-12">
-              <p className="text-gray-500">No materials found</p>
-              <Link href="/materials/new">
-                <Button className="mt-4">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Material
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </Layout>
   );
