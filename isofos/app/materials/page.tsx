@@ -23,7 +23,13 @@ export default function MaterialsPage() {
     try {
       setLoading(true);
       const data = await apiService.getMaterials();
-      setMaterials(Array.isArray(data) ? data : []);
+      // Handle nested response (e.g., { materials: [...] }) from backend
+      const materialList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.materials)
+        ? data.materials
+        : [];
+      setMaterials(materialList);
     } catch (error) {
       toast.error('Failed to load materials');
       setMaterials([]);
@@ -43,7 +49,7 @@ export default function MaterialsPage() {
     }
   };
 
-  const filteredMaterials = materials.filter(material =>
+  const filteredMaterials = materials.filter((material) =>
     material?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
     material?.description?.toLowerCase()?.includes(searchTerm.toLowerCase())
   );
@@ -116,7 +122,7 @@ export default function MaterialsPage() {
                     <TableCell>
                       <div className="flex items-center">
                         <DollarSign className="h-4 w-4 mr-1" />
-                        {material.unit_price.toFixed(2)}
+                        {material.unit_price ? Number(material.unit_price).toFixed(2) : '-'}
                       </div>
                     </TableCell>
                     <TableCell>

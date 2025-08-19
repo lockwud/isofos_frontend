@@ -1,51 +1,76 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Layout from '@/components/Layout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { apiService } from '@/lib/api';
-import { Plus, Search, Eye, Edit, Trash2, Warehouse, MapPin } from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Layout from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { apiService } from "@/lib/api";
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Warehouse,
+  MapPin,
+} from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
 export default function WarehousesPage() {
   const [warehouses, setWarehouses] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchWarehouses();
-  }, []);
 
   const fetchWarehouses = async () => {
     try {
       setLoading(true);
       const data = await apiService.getWarehouseRacks();
-      setWarehouses(Array.isArray(data) ? data : []);
+      const rackList = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.racks)
+        ? data.racks
+        : [];
+      setWarehouses(rackList);
     } catch (error) {
-      toast.error('Failed to load warehouses');
+      console.error("Failed to load warehouses:", error);
+      toast.error("Failed to load warehouses");
       setWarehouses([]);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchWarehouses();
+  }, []);
+
   const deleteWarehouse = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this warehouse?')) return;
+    if (!confirm("Are you sure you want to delete this warehouse?")) return;
+
     try {
       await apiService.deleteWarehouseRack(id);
-      toast.success('Warehouse deleted successfully');
+      toast.success("Warehouse deleted successfully");
       fetchWarehouses();
     } catch (error) {
-      toast.error('Failed to delete warehouse');
+      console.error("Failed to delete warehouse:", error);
+      toast.error("Failed to delete warehouse");
     }
   };
 
-  const filteredWarehouses = warehouses.filter(warehouse =>
-    warehouse?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-    warehouse?.location?.toLowerCase()?.includes(searchTerm.toLowerCase())
+  const filteredWarehouses = warehouses.filter(
+    (warehouse) =>
+      warehouse?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      warehouse?.location?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -54,7 +79,9 @@ export default function WarehousesPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Warehouses</h1>
-            <p className="mt-2 text-gray-600">Manage your warehouse locations</p>
+            <p className="mt-2 text-gray-600">
+              Manage your warehouse locations
+            </p>
           </div>
           <Link href="/warehouse/new">
             <Button>
@@ -84,6 +111,7 @@ export default function WarehousesPage() {
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {loading ? (
                 <TableRow>
@@ -113,7 +141,7 @@ export default function WarehousesPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {warehouse.capacity || 'Not specified'}
+                      {warehouse.capacity ?? "Not specified"}
                     </TableCell>
                     <TableCell className="flex gap-2">
                       <Link href={`/warehouses/${warehouse.id}`}>

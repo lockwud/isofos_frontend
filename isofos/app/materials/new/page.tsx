@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { apiService } from '@/lib/api';
 import { toast } from 'sonner';
@@ -21,26 +27,28 @@ export default function NewMaterialPage() {
     unit_of_measure: ''
   });
   const [loading, setLoading] = useState(false);
-  const [suppliers, setSuppliers] = useState<any[]>([]); // Initialize as empty array
+  const [suppliers, setSuppliers] = useState<any[]>([]);
 
-  useEffect(() => {
-    const fetchSuppliers = async () => {
-      try {
-        const data = await apiService.getSuppliers();
-        // Ensure data is always an array
-        setSuppliers(Array.isArray(data) ? data : []);
-      } catch (error) {
-        toast.error('Failed to load suppliers');
-        setSuppliers([]); // Set to empty array on error
-      }
-    };
-    fetchSuppliers();
-  }, []);
+useEffect(() => {
+  const fetchSuppliers = async () => {
+    try {
+      const data = await apiService.getSuppliers();
+      console.log('Suppliers loaded:', data);
+
+      // ✅ FIX: Extract the array from the object
+      setSuppliers(Array.isArray(data.suppliers) ? data.suppliers : []);
+    } catch (error) {
+      toast.error('Failed to load suppliers');
+      setSuppliers([]);
+    }
+  };
+  fetchSuppliers();
+}, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       await apiService.createMaterial({
         ...formData,
@@ -86,15 +94,16 @@ export default function NewMaterialPage() {
               <Select
                 name="supplier_id"
                 value={formData.supplier_id}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, supplier_id: value }))}
+                onValueChange={(value) =>
+                  setFormData(prev => ({ ...prev, supplier_id: value }))
+                }
                 required
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Add null check before mapping */}
-                  {Array.isArray(suppliers) && suppliers.map(supplier => (
+                  {suppliers.map(supplier => (
                     <SelectItem key={supplier.id} value={String(supplier.id)}>
                       {supplier.name}
                     </SelectItem>
@@ -103,7 +112,49 @@ export default function NewMaterialPage() {
               </Select>
             </div>
 
-            {/* ... rest of your form ... */}
+            <div className="space-y-2">
+              <Label htmlFor="unit_price">Unit Price *</Label>
+              <Input
+                id="unit_price"
+                name="unit_price"
+                type="number"
+                step="0.01"
+                value={formData.unit_price}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="unit_of_measure">Unit of Measure</Label>
+              <Select
+                name="unit_of_measure"
+                value={formData.unit_of_measure}
+                onValueChange={(value) =>
+                  setFormData(prev => ({ ...prev, unit_of_measure: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kg">kg</SelectItem>
+                  <SelectItem value="litre">litre</SelectItem>
+                  <SelectItem value="piece">piece</SelectItem>
+                  <SelectItem value="meter">meter</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-4">

@@ -140,7 +140,7 @@ export default function ProjectsPage() {
                     </p>
                     {project.budget && (
                       <p className="text-sm text-gray-600">
-                        <strong>Budget:</strong> $
+                        <strong>Budget:</strong> ¢
                         {project.budget.toLocaleString()}
                       </p>
                     )}

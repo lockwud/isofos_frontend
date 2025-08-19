@@ -1,52 +1,90 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Layout from '@/components/Layout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { apiService } from '@/lib/api';
-import { Plus, Search, Eye, Edit, Trash2, Box, Warehouse, Hash } from 'lucide-react';
-import Link from 'next/link';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import Layout from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { apiService } from "@/lib/api";
+import {
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Box,
+  Warehouse,
+  Hash,
+} from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { Material, WarehouseRack } from "@/types";
 
 export default function InventoryPage() {
   const [inventory, setInventory] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [racks, setRacks] = useState<WarehouseRack[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchInventory();
+    fetchAllData();
   }, []);
 
-  const fetchInventory = async () => {
+  const fetchAllData = async () => {
     try {
       setLoading(true);
-      const data = await apiService.getInventory();
-      setInventory(Array.isArray(data) ? data : []);
+
+      const [inv, mats, wracks] = await Promise.all([
+        apiService.getInventory(),
+        apiService.getMaterials(),
+        apiService.getWarehouseRacks(),
+      ]);
+
+      setInventory(Array.isArray(inv) ? inv : []);
+      setMaterials(mats);
+      setRacks(wracks);
     } catch (error) {
-      toast.error('Failed to load inventory');
-      setInventory([]);
+      console.error(error);
+      toast.error("Failed to load inventory data");
     } finally {
       setLoading(false);
     }
   };
 
+  const getMaterialName = (id: number) =>
+    materials.find((m) => m.id === id)?.name || "Unknown material";
+
+  const getRackName = (id: number) =>
+    racks.find((r) => r.id === id)?.name || "Unknown rack";
+
   const deleteInventoryItem = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this inventory item?')) return;
+    if (!confirm("Are you sure you want to delete this inventory item?"))
+      return;
     try {
       await apiService.deleteInventoryItem(id);
-      toast.success('Inventory item deleted successfully');
-      fetchInventory();
+      toast.success("Inventory item deleted successfully");
+      fetchAllData();
     } catch (error) {
-      toast.error('Failed to delete inventory item');
+      toast.error("Failed to delete inventory item");
     }
   };
 
-  const filteredInventory = inventory.filter(item =>
-    item?.material?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
-    item?.rack?.name?.toLowerCase()?.includes(searchTerm.toLowerCase())
-  );
+  const filteredInventory = inventory.filter((item) => {
+    const materialName = getMaterialName(item.material_id).toLowerCase();
+    const rackName = getRackName(item.rack_id).toLowerCase();
+    return (
+      materialName.includes(searchTerm.toLowerCase()) ||
+      rackName.includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
     <Layout>
@@ -104,13 +142,13 @@ export default function InventoryPage() {
                     <TableCell className="font-medium">
                       <div className="flex items-center">
                         <Box className="h-4 w-4 mr-2" />
-                        {item.material?.name || 'Unknown material'}
+                        {getMaterialName(item.material_id)}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
                         <Warehouse className="h-4 w-4 mr-2" />
-                        {item.rack?.name || 'Unknown rack'}
+                        {getRackName(item.rack_id)}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -120,7 +158,9 @@ export default function InventoryPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {item.last_restocked ? new Date(item.last_restocked).toLocaleDateString() : 'Never'}
+                      {item.last_restocked
+                        ? new Date(item.last_restocked).toLocaleDateString()
+                        : "Never"}
                     </TableCell>
                     <TableCell className="flex gap-2">
                       <Link href={`/inventory/${item.id}`}>

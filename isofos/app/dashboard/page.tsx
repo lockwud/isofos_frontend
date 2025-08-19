@@ -34,55 +34,65 @@ export default function Dashboard() {
   }, []);
 
   const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch all data in parallel using the correct API methods
-      const [
-        projectsResponse,
-        clientsResponse,
-        employeesResponse,
-        suppliersResponse,
-        inventoryResponse,
-        projectsData
-      ] = await Promise.all([
-        apiService.totalProjects(),
-        apiService.totalClients(),
-        apiService.totalEmployees(),
-        apiService.totalSuppliers(),
-        apiService.getInventory(),
-        apiService.getProjects() // For recent projects
-      ]);
+  try {
+    setLoading(true);
 
-      // Calculate stats from responses
-      console.log(projectsData)
-      const activeProjects = projectsData.projects.filter((p: Project) => p.status === 'in_progress').length;
-      const lowStockItems = inventoryResponse.inventory.filter((item: any) => item.quantity < 10).length;
+    const [
+      projectsResponse,
+      clientsResponse,
+      employeesResponse,
+      suppliersResponse,
+      inventoryResponse,
+      projectsData,
+    ] = await Promise.all([
+      apiService.totalProjects(),
+      apiService.totalClients(),
+      apiService.totalEmployees(),
+      apiService.totalSuppliers(),
+      apiService.getInventory(),
+      apiService.getProjects(),
+    ]);
 
-      setStats({
-        totalProjects: projectsResponse.total || 0,
-        activeProjects,
-        totalClients: clientsResponse.total || 0,
-        totalEmployees: employeesResponse.total || 0,
-        totalSuppliers: suppliersResponse.total || 0,
-        lowStockItems,
-      });
+    // Log to verify actual data structure
+    console.log('projectsData:', projectsData);
+    console.log('inventoryResponse:', inventoryResponse);
 
-      // Get recent projects (last 5)
-      const recent = [...projectsData.projects]
-        .sort((a: Project, b: Project) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )
-        .slice(0, 5);
-      setRecentProjects(recent);
+    // Safely get project list and inventory list with fallback to empty arrays
+    const projectsList = Array.isArray(projectsData)
+      ? projectsData
+      : projectsData?.projects ?? [];
 
-    } catch (error: any) {
-      console.error('Dashboard error:', error);
-      toast.error(error.message || 'Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const inventoryList = Array.isArray(inventoryResponse)
+      ? inventoryResponse
+      : inventoryResponse?.inventory ?? [];
+
+    // Calculate stats
+    const activeProjects = projectsList.filter((p: Project) => p.status === 'in_progress').length;
+    const lowStockItems = inventoryList.filter((item: any) => item.quantity < 10).length;
+
+    setStats({
+      totalProjects: projectsResponse.total || 0,
+      activeProjects,
+      totalClients: clientsResponse.total || 0,
+      totalEmployees: employeesResponse.total || 0,
+      totalSuppliers: suppliersResponse.total || 0,
+      lowStockItems,
+    });
+
+    // Sort and slice recent projects
+    const recent = [...projectsList]
+      .sort((a: Project, b: Project) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5);
+
+    setRecentProjects(recent);
+  } catch (error: any) {
+    console.error('Dashboard error:', error);
+    toast.error(error.message || 'Failed to load dashboard data');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const statCards = [
     {
