@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState,useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -11,17 +11,9 @@ import { apiService } from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function NewEmployeePage() {
   const router = useRouter();
-  const [projects, setProjects] = useState([]);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -31,21 +23,7 @@ export default function NewEmployeePage() {
     position: "",
     base_salary: "",
     hire_date: "",
-    project_id:""
   });
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await apiService.getProjects(); // Make sure this exists
-        setProjects(res.projects);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchProjects();
-  }, []);
 
   const [loading, setLoading] = useState(false);
 
@@ -72,10 +50,10 @@ export default function NewEmployeePage() {
       const payload = {
         ...formData,
         base_salary: parseFloat(formData.base_salary),
-        hire_date: formData.hire_date || undefined,
         phone: formData.phone || undefined,
         address: formData.address || undefined,
         position: formData.position || undefined,
+        hire_date: formData.hire_date || undefined,
       };
 
       const response = await apiService.createEmployee(payload);
@@ -169,27 +147,6 @@ export default function NewEmployeePage() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="project_id">Assign to Project</Label>
-                <Select
-                  value={formData.project_id}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, project_id: value }))
-                  }
-                >
-                  <SelectTrigger id="project_id" className="w-full">
-                    <SelectValue placeholder="Select a project" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project.id} value={String(project.id)}>
-                        {project.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="position">Position</Label>
@@ -201,7 +158,6 @@ export default function NewEmployeePage() {
                     placeholder="e.g., Electrician"
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="base_salary">Base Salary *</Label>
                   <Input

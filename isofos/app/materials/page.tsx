@@ -23,12 +23,22 @@ export default function MaterialsPage() {
     try {
       setLoading(true);
       const data = await apiService.getMaterials();
-      // Handle nested response (e.g., { materials: [...] }) from backend
-      const materialList = Array.isArray(data)
+
+      // Normalize response: wrap supplier as object if only supplier_name/id exist
+      const materialList = (Array.isArray(data)
         ? data
         : Array.isArray(data?.materials)
         ? data.materials
-        : [];
+        : []
+      ).map((m: any) => ({
+        ...m,
+        supplier: m.supplier
+          ? m.supplier
+          : m.supplier_name
+          ? { id: m.supplier_id, name: m.supplier_name }
+          : null,
+      }));
+
       setMaterials(materialList);
     } catch (error) {
       toast.error('Failed to load materials');
