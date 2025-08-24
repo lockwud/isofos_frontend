@@ -81,12 +81,23 @@ export default function EmployeesPage() {
             <h1 className="text-3xl font-bold">Employees</h1>
             <p className="mt-2 text-gray-600">Manage your workforce</p>
           </div>
-          <Link href="/employees/new">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Employee
-            </Button>
-          </Link>
+          <div className="flex gap-3">
+            {/* New Employee Button */}
+            <Link href="/employees/new">
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                New Employee
+              </Button>
+            </Link>
+
+            {/* Assign Employee Button */}
+            <Link href="/employees/assign">
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Assign Employee
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Search */}

@@ -69,6 +69,9 @@ export interface Client {
   }
   
   export interface Employee {
+  id: Key | null | undefined;
+  first_name: ReactNode;
+  last_name: ReactNode;
   em_id: string;        // Changed from 'id: number'
   em_name: string;      // Changed from 'first_name' and 'last_name'
   em_roll: string;      // Changed from 'position'

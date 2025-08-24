@@ -435,15 +435,25 @@ class ApiService {
   }
 
   // Project resources
-  async getProjectEmployees(
-    projectId: number,
-    loadingKey?: string
-  ): Promise<ProjectEmployee[]> {
-    return this.getAll<ProjectEmployee>(
-      `project-employees?project_id=${projectId}`,
-      loadingKey
-    );
-  }
+  // FIXED: unwrap { employees: [...] } response
+async getProjectEmployees(
+  projectId: number,
+  loadingKey?: string
+): Promise<ProjectEmployee[]> {
+  const response = await this.request<{ employees: ProjectEmployee[] }>(
+    `/project-employees/project/${projectId}`, // ✅ corrected
+    {},
+    loadingKey
+  );
+  return response.employees || [];
+}
+
+
+
+  async getAllAssignedEmployees(loadingKey?: string): Promise<ProjectEmployee[]> {
+  return this.getAll<ProjectEmployee>("project-employees", loadingKey);
+}
+
 
   async getProjectMaterials(
     projectId: number,
